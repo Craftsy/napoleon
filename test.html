@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script type="text/javascript" src="require.js"></script>
+    <script type="text/javascript">
+        require(
+            ['build/Napoleon'],
+            function(Napoleon) {
+                var router = new Napoleon.Router();
+                router.mount('GET', '/');
+                router.mount('GET', '/patterns');
+                router.mount('GET', '/projects');
+                router.mount('GET', '/user/{userId}');
+                router.mount('GET', '/user/{userId}/profile');
+                router.mount('GET', '/user/{userId}/projects');
+                router.mount('GET', '/user/view/{userId}');
+                //router.mount('GET', '/user/view/{test}');
+
+                window.router = router;
+            }
+        );
+    </script>
+</head>
+
+<body>
+
+</body>
+
+</html>

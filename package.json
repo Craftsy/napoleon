@@ -1,0 +1,10 @@
+{
+  "name": "Napoleon",
+  "version": "2.0.0",
+  "description": "JavaScript Routing & HTML5 History",
+  "dependencies": {
+    "gulp": "3.9.0",
+    "gulp-uglify": "1.2.0",
+    "gulp-babel": "5.1.0"
+  }
+}
