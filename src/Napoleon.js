@@ -1,7 +1,22 @@
 export class URLStructure {
-    constructor(path) {
-        this.path = path;
-        this.components = this.path.split('/').filter((component => component.length > 0));
+    constructor(url) {
+        let {1: path, 3: querystring} = url.match(/(.*?)($|\?(.*))/);
+
+        this.url = url;
+
+        // find path components
+        this.components = path.split('/').filter((component => component.length > 0));
+
+        // parse querystring
+        this.querystring = {};
+        if (querystring != null) {
+            querystring.split('&').forEach(
+                (keyValue) => {
+                    let {0: key, 1: value} = keyValue.split('=');
+                    this.querystring[key] = value;
+                }
+            );
+        }
     }
 
     static getComponentKey(component) {
@@ -49,35 +64,90 @@ export class URLStructure {
 
         return path;
     }
+
+    extractParameters(url) {
+        let urlStructure = new URLStructure(url);
+        let parameters = {};
+
+        // match path parameters
+        this.components.forEach(
+            (component, idx) => {
+                let componentKey = URLStructure.getComponentKey(component);
+                if (componentKey != null) {
+                    parameters[componentKey] = urlStructure.components[idx];
+                }
+            }
+        );
+
+        // add querystring parameters
+        let querystringKeys = Object.keys(urlStructure.querystring);
+        querystringKeys.forEach(
+            (key) => {
+                // Don't overwrite a value we already identified
+                if (!parameters.hasOwnProperty(key)) {
+                    let value = urlStructure.querystring[key];
+                    parameters[key] = value;
+                }
+            }
+        );
+
+        return parameters;
+    }
 }
+
+const DYNAMIC_ROUTE_KEY = '?dynamic?';
 
 class TreeRoute {
     constructor() {
-        this.urlStructure = null;
+        this.leaf = null;
         this.children = {};
     }
 
-    addRoute(urlStructure, componentIndex = 0) {
+    addRoute(handler, urlStructure, componentIndex = 0) {
         let component = urlStructure.components[componentIndex];
 
         if (component == null) {
             // we've reached the end of this route's path
-            if (this.urlStructure == null) {
+            if (this.leaf == null) {
                 // there's no leaf node here, make this one it
-                this.urlStructure = urlStructure;
+                this.leaf = {urlStructure, handler};
             } else {
                 // there is already a matching route here, throw an error
-                throw new Error(`Route ${urlStructure.path} already mounted: ${this.urlStructure.path}`);
+                throw new Error(`Route ${urlStructure.path} already mounted: ${this.leaf.urlStructure.path}`);
             }
         } else {
             let componentKey = URLStructure.getComponentKey(component);
-            let childKey = componentKey == null ? component : 'dynamic';
+            let childKey = componentKey == null ? component : DYNAMIC_ROUTE_KEY;
             if (!this.children.hasOwnProperty(childKey)) {
                 // child node doesn't exist, create it
                 this.children[childKey] = new TreeRoute();
             }
-            this.children[childKey].addRoute(urlStructure, componentIndex+1);
+            this.children[childKey].addRoute(handler, urlStructure, componentIndex+1);
         }
+    }
+
+    matchPath(urlStructure, componentIndex = 0) {
+        let match = null;
+
+        if (componentIndex === urlStructure.components.length) {
+            // We've reached the end, cool, is there a route here?
+            match = this.leaf;
+        } else {
+            // Not at the end of the path yet!
+            let component = urlStructure.components[componentIndex];
+
+            if (this.children.hasOwnProperty(component)) {
+                // Yay, there's an exact match at this level
+                match = this.children[component].matchPath(urlStructure, componentIndex+1);
+            }
+
+            if (match == null && this.children.hasOwnProperty(DYNAMIC_ROUTE_KEY)) {
+                // There wasn't a more-exact route that matched so maybe it's dynamic?
+                match = this.children[DYNAMIC_ROUTE_KEY].matchPath(urlStructure, componentIndex+1);
+            }
+        }
+
+        return match;
     }
 }
 
@@ -89,21 +159,36 @@ export class Router {
         };
     }
 
-    mount(method, path) {
+    mount(method, path, handler) {
         if (method !== 'GET' && method !== 'POST') {
             throw new Error('Route method must be either GET or POST');
         }
 
         let urlStructure = new URLStructure(path);
+        this.trees[method].addRoute(handler, urlStructure);
+    }
 
-        this.trees[method].addRoute(urlStructure);
+    matchRoute(method, path) {
+        if (method !== 'GET' && method !== 'POST') {
+            throw new Error('Route method must be either GET or POST');
+        }
 
-        console.log( urlStructure.applyState({userId: 614307}) );
+        let urlStructure = new URLStructure(path);
+        return this.trees[method].matchPath(urlStructure);
+    }
+
+    route(method, url) {
+        let match = this.matchRoute(method, url);
+
+        if (match != null) {
+            let parameters = match.urlStructure.extractParameters(url)
+            match.handler(url, parameters);
+        }
     }
 }
 
 let Napoleon = {
-
+    
 };
 
 export default Napoleon;

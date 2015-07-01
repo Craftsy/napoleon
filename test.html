@@ -8,14 +8,20 @@
             ['build/Napoleon'],
             function(Napoleon) {
                 var router = new Napoleon.Router();
-                router.mount('GET', '/');
-                router.mount('GET', '/patterns');
-                router.mount('GET', '/projects');
-                router.mount('GET', '/user/{userId}');
-                router.mount('GET', '/user/{userId}/profile');
-                router.mount('GET', '/user/{userId}/projects');
-                router.mount('GET', '/user/view/{userId}');
-                router.mount('GET', '/user/view/{userId}/test');
+                var handler = function() {
+                    console.log('omg found a route!', arguments);
+                };
+
+                router.mount('GET', '/', handler);
+                router.mount('GET', '/patterns', handler);
+                router.mount('GET', '/projects', handler);
+                router.mount('GET', '/user/{userId}', handler);
+                router.mount('GET', '/user/{userId}/profile', handler);
+                router.mount('GET', '/user/{userId}/projects', handler);
+                router.mount('GET', '/user/view/{userId}', handler);
+                router.mount('GET', '/user/view/{userId}/test', handler);
+
+                router.route('GET', '/user/view/614307?canEdit=true');
 
                 window.router = router;
             }
