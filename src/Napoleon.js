@@ -54,8 +54,7 @@ export class URLStructure {
 class TreeRoute {
     constructor() {
         this.urlStructure = null;
-        this.staticChildren = {};
-        this.dynamicChildren = {};
+        this.children = {};
     }
 
     addRoute(urlStructure, componentIndex = 0) {
@@ -72,12 +71,12 @@ class TreeRoute {
             }
         } else {
             let componentKey = URLStructure.getComponentKey(component);
-            let childMap = componentKey == null ? this.staticChildren : this.dynamicChildren;
-            if (!childMap.hasOwnProperty(component)) {
+            let childKey = componentKey == null ? component : 'dynamic';
+            if (!this.children.hasOwnProperty(childKey)) {
                 // child node doesn't exist, create it
-                childMap[component] = new TreeRoute();
+                this.children[childKey] = new TreeRoute();
             }
-            childMap[component].addRoute(urlStructure, componentIndex+1);
+            this.children[childKey].addRoute(urlStructure, componentIndex+1);
         }
     }
 }
