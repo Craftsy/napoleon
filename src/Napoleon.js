@@ -13,7 +13,7 @@ export class URLStructure {
             querystring.split('&').forEach(
                 (keyValue) => {
                     let {0: key, 1: value} = keyValue.split('=');
-                    this.querystring[key] = value;
+                    this.querystring[key] = decodeURIComponent(value);
                 }
             );
         }
@@ -155,25 +155,27 @@ export class Router {
     constructor() {
         this.trees = {
             GET: new TreeRoute(),
-            POST: new TreeRoute()
+            POST: new TreeRoute(),
+            PUT: new TreeRoute(),
+            DELETE: new TreeRoute()
         };
     }
 
     mount(method, path, handler) {
-        if (method !== 'GET' && method !== 'POST') {
-            throw new Error('Route method must be either GET or POST');
+        if (method !== 'GET' && method !== 'POST' && method !== 'PUT' && method !== 'DELETE') {
+            throw new Error('Route method must be either GET, POST, PUT, or DELETE');
         }
 
         let urlStructure = new URLStructure(path);
         this.trees[method].addRoute(handler, urlStructure);
     }
 
-    matchRoute(method, path) {
+    matchRoute(method, url) {
         if (method !== 'GET' && method !== 'POST') {
             throw new Error('Route method must be either GET or POST');
         }
 
-        let urlStructure = new URLStructure(path);
+        let urlStructure = new URLStructure(url);
         return this.trees[method].matchPath(urlStructure);
     }
 
@@ -181,7 +183,7 @@ export class Router {
         let match = this.matchRoute(method, url);
 
         if (match != null) {
-            let parameters = match.urlStructure.extractParameters(url)
+            let parameters = match.urlStructure.extractParameters(url);
             match.handler(url, parameters);
         }
     }
