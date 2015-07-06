@@ -9,7 +9,7 @@ gulp.task('default', function(){
             loose: ['es6.classes', 'es6.destructuring', 'es6.spread'],
             modules: 'umd'
         }))
-        .pipe(uglify())
+        //.pipe(uglify())
         .pipe(gulp.dest('build'));
 });
 

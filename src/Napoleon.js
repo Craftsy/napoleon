@@ -1,5 +1,10 @@
 export class URLStructure {
     constructor(url) {
+        // remove any protocol/host/port
+        let hostMatch = url.match( /.*?\/\/.*?\// );
+        let host = hostMatch ? hostMatch[0] : '/';
+        url = url.replace( host, '/' );
+
         let {1: path, 3: querystring} = url.match(/(.*?)($|\?(.*))/);
 
         this.url = url;
@@ -189,8 +194,91 @@ export class Router {
     }
 }
 
-let Napoleon = {
-    
-};
+let Napoleon = (function(){
+    let _pageUrlDefinition = null;
+    let _onStateChange = null;
+
+    let pageState = {
+        isNapoleon: true,
+        url: {},
+        extras: {}
+    };
+
+    let handleStateChange = function() {
+        // If the browser's state isn't from Napoleon then parse the url and use it for state
+        if (window.history.state == null || window.history.state.isNapoleon !== true) {
+            // Existing state isn't from Napoleon, set it from the URL
+            pageState = {
+                isNapoleon: true,
+                url: _pageUrlDefinition.extractParameters(location.href),
+                extras: {}
+            };
+        } else {
+            // Existing state is from Napoleon, just use it
+            pageState = window.history.state;
+        }
+
+        let {url, extras} = pageState;
+        _onStateChange({url, extras});
+    };
+
+    return {
+        attach: function(config) {
+            let {url, onStateChange} = config;
+
+            if (url == null) {
+                throw new Error('Missing `url` in Napoleon config');
+            }
+            if (onStateChange == null) {
+                throw new Error('Missing `onStateChange` in Napoleon config');
+            }
+
+            _pageUrlDefinition = new URLStructure(url);
+            _onStateChange = onStateChange;
+
+            window.addEventListener('popstate', handleStateChange);
+
+            handleStateChange();
+        },
+
+        modifyState: function(config) {
+            let {url: urlParams, extras: extraParams, replace} = config;
+
+            if (urlParams != null) {
+                for (let key in urlParams) {
+                    if (urlParams.hasOwnProperty(key)) {
+                        let value = urlParams[key];
+                        if (value == null) {
+                            delete pageState.url[key];
+                        } else {
+                            pageState.url[key] = value;
+                        }
+                    }
+                }
+            }
+
+            if (extraParams != null) {
+                for (let key in extraParams) {
+                    if (extraParams.hasOwnProperty(key)) {
+                        let value = extraParams[key];
+                        if (value == null) {
+                            delete pageState.extras[key];
+                        } else {
+                            pageState.extras[key] = value;
+                        }
+                    }
+                }
+            }
+
+            if (replace === true) {
+                window.history.replaceState(pageState, '', _pageUrlDefinition.applyState(pageState.url));
+            } else {
+                window.history.pushState(pageState, '', _pageUrlDefinition.applyState(pageState.url));
+            }
+
+            handleStateChange();
+        }
+    }
+})(this);
 
 export default Napoleon;

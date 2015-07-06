@@ -22,6 +22,28 @@ describe('URLStructure',function() {
             expect(urlStructure).to.have.property('url').to.equal(url);
         });
 
+        it('removes host/protocol/port', function(){
+            let urlStructure;
+
+            urlStructure = new URLStructure('http://www.example.com/this/is/something');
+            expect(urlStructure).to.have.property('url').to.equal('/this/is/something');
+
+            urlStructure = new URLStructure('https://www.example.com/this/is/something');
+            expect(urlStructure).to.have.property('url').to.equal('/this/is/something');
+
+            urlStructure = new URLStructure('//www.example.com/this/is/something');
+            expect(urlStructure).to.have.property('url').to.equal('/this/is/something');
+
+            urlStructure = new URLStructure('http://example.com/this/is/something');
+            expect(urlStructure).to.have.property('url').to.equal('/this/is/something');
+
+            urlStructure = new URLStructure('http://www.example.com:80/this/is/something');
+            expect(urlStructure).to.have.property('url').to.equal('/this/is/something');
+
+            urlStructure = new URLStructure('//www.example.com:80/this/is/something');
+            expect(urlStructure).to.have.property('url').to.equal('/this/is/something');
+        });
+
         it('identifies the path components', function(){
             let url = '/this/is/{something}';
             let urlStructure = new URLStructure(url);
