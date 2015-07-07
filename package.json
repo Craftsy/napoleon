@@ -2,6 +2,7 @@
   "name": "napoleon",
   "version": "2.0.0",
   "description": "JavaScript Routing & HTML5 History",
+  "main": "build/napoleon.js",
   "dependencies": {
     "mocha": "2.2.5",
     "chai": "2.1.0",

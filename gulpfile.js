@@ -4,12 +4,12 @@ var uglify = require('gulp-uglify');
 var mocha = require('gulp-mocha');
 
 gulp.task('default', function(){
-    gulp.src('src/Napoleon.js')
+    gulp.src('src/napoleon.js')
         .pipe(babel({
             loose: ['es6.classes', 'es6.destructuring', 'es6.spread'],
             modules: 'umd'
         }))
-        //.pipe(uglify())
+        .pipe(uglify())
         .pipe(gulp.dest('build'));
 });
 
