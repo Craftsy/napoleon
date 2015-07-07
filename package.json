@@ -1,6 +1,6 @@
 {
   "name": "napoleon",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "JavaScript Routing & HTML5 History",
   "main": "build/napoleon.js",
   "dependencies": {
