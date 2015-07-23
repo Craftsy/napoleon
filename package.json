@@ -1,9 +1,9 @@
 {
   "name": "napoleon",
-  "version": "2.0.1",
+  "version": "0.0.1",
   "description": "JavaScript Routing & HTML5 History",
   "main": "build/napoleon.js",
-  "dependencies": {
+  "devDependencies": {
     "mocha": "2.2.5",
     "chai": "2.1.0",
     "gulp": "3.9.0",

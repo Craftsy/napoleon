@@ -22,7 +22,7 @@ gulp.task('build-tests', ['default'], function(){
         .pipe(gulp.dest('build/tests'));
 });
 
-gulp.task('test', function(){
+gulp.task('test', ['build-tests'], function(){
     gulp.src('build/tests/*.js', {read: false})
     .pipe(mocha({reporter: 'nyan'}));
 });

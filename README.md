@@ -1,13 +1,18 @@
 # Napoleon
-A JavaScript routing and HTML5 history library.
+An isomorphic JavaScript routing and HTML5 history library.
+
+- quick use case & code example -
+- examples directory -
 
 ## Routing
-Routes are stored in a tree structure for fast insertion and lookup. Napoleon supports the GET, POST, PUT, and DELETE methods.
+Routes are stored in a tree structure for fast insertion and lookup.
+
+- document that all parameters come through as strings -
 
 ###Adding routes
-```mount(METHOD, PATH, HANDLER)```
-* **method**: GET|POST|PUT|DELETE
-* **path**: URL path to match
+`mount(METHOD, PATH, HANDLER)`
+* **method**: GET|POST|PUT|DELETE|etc - case insensitive
+* **path**: URL path to match - needs example
 * **handler**: function which is called when the path is matched
     * **url**: url that matched the route
     * **parameters**: key/value object with parameters pulled from the route and querystring
@@ -24,12 +29,19 @@ router.mount(
 ```
 
 ###Calling routes
-router.route('GET', url);
+- needs better documentation -
+router.route('GET', url); - this will automatically fire the route hander
+- document router.matchRoute
 
 ## HTML5 History
 Napoleon also provides a way to manage browsers' HTML5 history through state management.
+- browser support, and this is browser only -
+- basic example use case -
+- create data flow diagram -
+- why is this separate from the routing library -
 
 ###State
+- don't introduce `extras` here, move that down after the basic use of `url` params is familiar
 Napoleon's concept of state has two parts: `url` and `extras`. The `url` state matches the browser's URL, any values
 defined in the url path are extracted and combined with querystring parameters. e.g. a url definition of `/{category}`
 and actual url `/turtles?mutants=true` will yield the url state
@@ -60,6 +72,7 @@ The `onStateChange` function is called every time there is a new state, which ha
 * The page state is modified through Napoleon's API
 
 ###Modifying State
+- document that this fires onStateChange callback -
 Napoleon has a `modifyState` method which sets the `url` and `extras` states. Both of the configuration objects are optional.
 
 ```javascript
@@ -71,3 +84,4 @@ Napoleon.modifyState({
 
 There is a third configuration that can be set: `replace`. Setting `replace` to true will replace the existing browser
 history item instead of creating a new one.
+- give example -

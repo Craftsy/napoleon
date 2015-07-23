@@ -1,3 +1,7 @@
+// @TODO Let routes be named so URLs can be created from routes
+// @TODO Client-side routing, have router initialize from url and pick up changes
+// @TODO add global events like `urlChanged` or `routeHandled`, aka a way to fire Optimizly after content changed
+
 export class URLStructure {
     constructor(url) {
         // remove any protocol/host/port
@@ -7,9 +11,11 @@ export class URLStructure {
 
         let {1: path, 3: querystring} = url.match(/(.*?)($|\?(.*))/);
 
+        // @TODO kill this
         this.url = url;
 
         // find path components
+        // @TODO shouldn't be named components, what does the spec call it?
         this.components = path.split('/').filter((component => component.length > 0));
 
         // parse querystring
@@ -24,15 +30,21 @@ export class URLStructure {
         }
     }
 
+    static isComponentKey(component) {
+
+        return component.charAt(0) === '{' && component.charAt(component.length - 1) === '}';
+    }
+
+
     static getComponentKey(component) {
         let componentKey = null;
-        if (component.charAt(0) === '{' && component.charAt(component.length - 1) === '}') {
+        if (URLStructure.isComponentKey(component)) {
             componentKey = component.slice(1, -1);
         }
         return componentKey;
     }
 
-    applyState(state) {
+    getUrlForState(state) {
         // build path
         let componentKeys = [];
         let path = this.components.reduce(
@@ -102,7 +114,7 @@ export class URLStructure {
 
 const DYNAMIC_ROUTE_KEY = '?dynamic?';
 
-class TreeRoute {
+export class TreeRoute {
     constructor() {
         this.leaf = null;
         this.children = {};
@@ -158,33 +170,30 @@ class TreeRoute {
 
 export class Router {
     constructor() {
-        this.trees = {
-            GET: new TreeRoute(),
-            POST: new TreeRoute(),
-            PUT: new TreeRoute(),
-            DELETE: new TreeRoute()
-        };
+        this.trees = {};
     }
 
     mount(method, path, handler) {
-        if (method !== 'GET' && method !== 'POST' && method !== 'PUT' && method !== 'DELETE') {
-            throw new Error('Route method must be either GET, POST, PUT, or DELETE');
+        method = method.toLowerCase();
+        let urlStructure = new URLStructure(path);
+
+        if (this.trees[method] == null) {
+            this.trees[method] = new TreeRoute();
         }
 
-        let urlStructure = new URLStructure(path);
         this.trees[method].addRoute(handler, urlStructure);
+
+        return this;
     }
 
     matchRoute(method, url) {
-        if (method !== 'GET' && method !== 'POST') {
-            throw new Error('Route method must be either GET or POST');
-        }
-
+        method = method.toLowerCase();
         let urlStructure = new URLStructure(url);
         return this.trees[method].matchPath(urlStructure);
     }
 
     route(method, url) {
+        method = method.toLowerCase();
         let match = this.matchRoute(method, url);
 
         if (match != null) {
@@ -219,6 +228,7 @@ let Napoleon = (function(){
         }
 
         let {url, extras} = pageState;
+        // @TODO throw a warn if this call to _onStateChange modifies state
         _onStateChange({url, extras});
     };
 
@@ -238,6 +248,7 @@ let Napoleon = (function(){
 
             window.addEventListener('popstate', handleStateChange);
 
+            // @TODO don't call state change on init, have a second callback
             handleStateChange();
         },
 
@@ -271,9 +282,9 @@ let Napoleon = (function(){
             }
 
             if (replace === true) {
-                window.history.replaceState(pageState, '', _pageUrlDefinition.applyState(pageState.url));
+                window.history.replaceState(pageState, '', _pageUrlDefinition.getUrlForState(pageState.url));
             } else {
-                window.history.pushState(pageState, '', _pageUrlDefinition.applyState(pageState.url));
+                window.history.pushState(pageState, '', _pageUrlDefinition.getUrlForState(pageState.url));
             }
 
             handleStateChange();
