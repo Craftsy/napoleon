@@ -5,7 +5,6 @@
 
 export class URLStructure {
     static isSegmentKey(segment) {
-
         return segment.charAt(0) === '{' && segment.charAt(segment.length - 1) === '}';
     }
 
@@ -111,9 +110,26 @@ export class URLStructure {
 
         return parameters;
     }
+
+    toString() {
+        // Builds the URL from segments & querystring
+        let path = `/${this.segments.join('/')}`;
+        let query = [];
+        let queryString = '';
+
+        for (let key of Object.keys(this.querystring)) {
+            query.push(`key=${encodeURIComponent(this.querystring[key])}`);
+        }
+        if (query.length > 0) {
+            queryString = `?${query.join('&')}`;
+        }
+
+        return `${path}${queryString}`;
+    }
 }
 
 const DYNAMIC_ROUTE_KEY = '?dynamic?';
+const BLAT_ROUTE_KEY = '?blat?';
 
 export class TreeRoute {
     constructor() {
@@ -131,11 +147,22 @@ export class TreeRoute {
                 this.leaf = {urlStructure, handler};
             } else {
                 // there is already a matching route here, throw an error
-                throw new Error(`Route ${urlStructure.path} already mounted: ${this.leaf.urlStructure.path}`);
+                throw new Error(`Route ${urlStructure} already mounted: ${this.leaf.urlStructure}`);
             }
         } else {
-            let segmentKey = URLStructure.getSegmentKey(segment);
-            let childKey = segmentKey == null ? segment : DYNAMIC_ROUTE_KEY;
+            let childKey;
+            if (segment === '*') {
+                // ackbar: It's a blat!
+                // if the blat segment is not the last one throw an error
+                if (segmentIndex < urlStructure.segments.length - 1) {
+                    throw new Error(`Route ${urlStructure} cannot have path segments after the blat (*)`);
+                }
+                childKey = BLAT_ROUTE_KEY;
+            } else {
+                let segmentKey = URLStructure.getSegmentKey(segment);
+                childKey = segmentKey == null ? segment : DYNAMIC_ROUTE_KEY;
+            }
+
             if (!this.children.hasOwnProperty(childKey)) {
                 // child node doesn't exist, create it
                 this.children[childKey] = new TreeRoute();
@@ -162,6 +189,11 @@ export class TreeRoute {
             if (match == null && this.children.hasOwnProperty(DYNAMIC_ROUTE_KEY)) {
                 // There wasn't a more-exact route that matched so maybe it's dynamic?
                 match = this.children[DYNAMIC_ROUTE_KEY].matchPath(urlStructure, segmentIndex+1);
+            }
+
+            if (match == null && this.children.hasOwnProperty(BLAT_ROUTE_KEY)) {
+                // No exact match, no dynamic route, but there's a blat!
+                match = this.children[BLAT_ROUTE_KEY].matchPath(urlStructure, segmentIndex+1);
             }
         }
 

@@ -116,6 +116,15 @@ describe('Router', function() {
             expect(returnValue).to.have.property('handler').to.equal(noop2);
         });
 
+        it('should match blats', function() {
+            let router = new Router();
+            router.mount('GET', '*', noop);
+
+            let returnValue = router.matchRoute('GET', '/about');
+            expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
+            expect(returnValue).to.have.property('handler').to.equal(noop);
+        });
+
         it('should ignore querystrings', function() {
             let router = new Router();
             router.mount('GET', '/about', noop);

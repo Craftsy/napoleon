@@ -84,5 +84,21 @@ describe('TreeRoute', function() {
                 treeroute.addRoute.bind(treeroute, noop, new URLStructure('/about/{value}'))
             ).to.not.throw(Error);
         });
+
+        it('puts blats in the correct place', function() {
+            let treeroute = new TreeRoute();
+
+            let urlStructure = new URLStructure('*');
+            treeroute.addRoute(noop, urlStructure);
+            expect(treeroute).to.have.deep.property('children.?blat?.leaf').to.deep.equal({urlStructure, handler: noop});
+        });
+
+        it('doesn\'t allow path segments after a blat', function(){
+            let treeroute = new TreeRoute();
+
+            expect(
+                treeroute.addRoute.bind(treeroute, noop, new URLStructure('/*/about'))
+            ).to.throw(Error);
+        });
     });
 });

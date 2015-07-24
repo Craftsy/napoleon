@@ -91,4 +91,24 @@ describe('URLStructure',function() {
             })).to.equal('/about/value/test/anotherValue?qkey=qvalue&qkey2=qvalue2');
         });
     });
+
+    describe('#toString()', function() {
+        it('treats the url as absolute', function() {
+            expect(new URLStructure('').toString()).to.equal('/');
+            expect(new URLStructure('about').toString()).to.equal('/about');
+        });
+
+        it('adds all path segments', function() {
+            expect(new URLStructure('/about/{name}').toString()).to.equal('/about/{name}');
+        });
+
+        it('excludes trailing slashes', function() {
+            expect(new URLStructure('/about/').toString()).to.equal('/about');
+        });
+
+        it('includes a querystring', function() {
+            expect(new URLStructure('/about?key=value').toString()).to.equal('/about?key=value');
+            expect(new URLStructure('/about?key=the%20value').toString()).to.equal('/about?key=the%20value');
+        });
+    });
 });
