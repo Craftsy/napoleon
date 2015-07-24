@@ -1,4 +1,7 @@
 # Napoleon
+
+## This is still in active development and not quite ready for real use
+
 An isomorphic JavaScript routing and HTML5 history library.
 
 - quick use case & code example -
