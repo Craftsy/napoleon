@@ -1,8 +1,20 @@
 {
   "name": "napoleon",
   "version": "0.0.1",
-  "description": "JavaScript Routing & HTML5 History",
+  "description": "Isomorphic JavaScript Routing & HTML5 History",
+  "keywords": ["isomorphic", "routing", "html5", "history"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Craftsy/napoleon.git"
+  },
   "main": "build/napoleon.js",
+  "contributors": [
+    {
+      "name": "Chandler Prall",
+      "email": "chandler@craftsy.com"
+    }
+  ],
   "devDependencies": {
     "mocha": "2.2.5",
     "chai": "2.1.0",
