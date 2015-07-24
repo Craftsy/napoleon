@@ -3,87 +3,73 @@ import mocha from 'mocha';
 import {expect} from 'chai';
 
 describe('URLStructure',function() {
-    describe('::isComponentKey()', function() {
+    describe('::isSegmentKey()', function() {
         it('positively flags keys', function() {
-            expect(URLStructure.isComponentKey('{keyName}')).to.equal(true);
+            expect(URLStructure.isSegmentKey('{keyName}')).to.equal(true);
         });
 
         it('negatively flags non-keys', function() {
-            expect(URLStructure.isComponentKey('keyName')).to.equal(false);
-            expect(URLStructure.isComponentKey('{keyName')).to.equal(false);
-            expect(URLStructure.isComponentKey('keyName}')).to.equal(false);
-            expect(URLStructure.isComponentKey('key{Name}')).to.equal(false);
+            expect(URLStructure.isSegmentKey('keyName')).to.equal(false);
+            expect(URLStructure.isSegmentKey('{keyName')).to.equal(false);
+            expect(URLStructure.isSegmentKey('keyName}')).to.equal(false);
+            expect(URLStructure.isSegmentKey('key{Name}')).to.equal(false);
         });
     });
 
-    describe('::getComponentKey()', function() {
+    describe('::getSegmentKey()', function() {
         it('identifies the key name', function() {
-            expect(URLStructure.getComponentKey('{keyName}')).to.equal('keyName');
+            expect(URLStructure.getSegmentKey('{keyName}')).to.equal('keyName');
         });
 
-        it('disregards non-keyed components', function() {
-            expect(URLStructure.getComponentKey('keyName')).to.equal(null);
-            expect(URLStructure.getComponentKey('{keyName')).to.equal(null);
-            expect(URLStructure.getComponentKey('keyName}')).to.equal(null);
-            expect(URLStructure.getComponentKey('key{Name}')).to.equal(null);
+        it('disregards non-keyed segments', function() {
+            expect(URLStructure.getSegmentKey('keyName')).to.equal(null);
+            expect(URLStructure.getSegmentKey('{keyName')).to.equal(null);
+            expect(URLStructure.getSegmentKey('keyName}')).to.equal(null);
+            expect(URLStructure.getSegmentKey('key{Name}')).to.equal(null);
         });
+    });
+
+    describe('::getPathname()', function() {
+        let urlStructure;
+
+        expect(URLStructure.getPathname('http://www.example.com/this/is/something')).to.equal('/this/is/something');
+
+        expect(URLStructure.getPathname('https://www.example.com/this/is/something')).to.equal('/this/is/something');
+
+        expect(URLStructure.getPathname('//www.example.com/this/is/something')).to.equal('/this/is/something');
+
+        expect(URLStructure.getPathname('http://example.com/this/is/something')).to.equal('/this/is/something');
+
+        expect(URLStructure.getPathname('http://www.example.com:80/this/is/something')).to.equal('/this/is/something');
+
+        expect(URLStructure.getPathname('//www.example.com:80/this/is/something')).to.equal('/this/is/something');
     });
 
     describe('#constructor()', function() {
-        it('sets the url', function() {
-            let url = '/this/is/something';
-            let urlStructure = new URLStructure(url);
-            expect(urlStructure).to.have.property('url').to.equal(url);
-        });
-
-        it('removes host/protocol/port', function() {
-            let urlStructure;
-
-            urlStructure = new URLStructure('http://www.example.com/this/is/something');
-            expect(urlStructure).to.have.property('url').to.equal('/this/is/something');
-
-            urlStructure = new URLStructure('https://www.example.com/this/is/something');
-            expect(urlStructure).to.have.property('url').to.equal('/this/is/something');
-
-            urlStructure = new URLStructure('//www.example.com/this/is/something');
-            expect(urlStructure).to.have.property('url').to.equal('/this/is/something');
-
-            urlStructure = new URLStructure('http://example.com/this/is/something');
-            expect(urlStructure).to.have.property('url').to.equal('/this/is/something');
-
-            urlStructure = new URLStructure('http://www.example.com:80/this/is/something');
-            expect(urlStructure).to.have.property('url').to.equal('/this/is/something');
-
-            urlStructure = new URLStructure('//www.example.com:80/this/is/something');
-            expect(urlStructure).to.have.property('url').to.equal('/this/is/something');
-        });
-
-        it('identifies the path components', function() {
+        it('identifies the path segments', function() {
             let url = '/this/is/{something}';
             let urlStructure = new URLStructure(url);
-            // @TODO change to deepEquals tet
-            expect(urlStructure).to.have.property('components').with.length(3);
-            expect(urlStructure.components[0]).to.equal('this');
-            expect(urlStructure.components[1]).to.equal('is');
-            expect(urlStructure.components[2]).to.equal('{something}');
+            expect(urlStructure).to.have.property('segments').to.deep.equal(['this', 'is', '{something}']);
         });
 
         it('ignores trailing slash', function() {
             let url = '/this/is/something/';
             let urlStructure = new URLStructure(url);
-            expect(urlStructure).to.have.property('components').with.length(3);
+            expect(urlStructure).to.have.property('segments').to.deep.equal(['this', 'is', 'something']);
 
-            // @TODO explicity test without trailing slash
+            url = '/this/is/something';
+            urlStructure = new URLStructure(url);
+            expect(urlStructure).to.have.property('segments').to.deep.equal(['this', 'is', 'something']);
         });
 
         it('parses the querystring', function() {
             let url = `/about?key=value&query=param&encoded=${encodeURIComponent('this is a test')}`;
             let urlStructure = new URLStructure(url);
-            // @TODO deepEquals
-            expect(urlStructure).to.have.property('querystring').to.not.be.empty;
-            expect(urlStructure.querystring).to.have.property('key').to.equal('value');
-            expect(urlStructure.querystring).to.have.property('query').to.equal('param');
-            expect(urlStructure.querystring).to.have.property('encoded').to.equal('this is a test');
+            expect(urlStructure).to.have.property('querystring').to.deep.equal({
+                key: 'value',
+                query: 'param',
+                encoded: 'this is a test'
+            });
         });
     });
 

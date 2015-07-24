@@ -1,22 +1,37 @@
 // @TODO Let routes be named so URLs can be created from routes
 // @TODO Client-side routing, have router initialize from url and pick up changes
 // @TODO add global events like `urlChanged` or `routeHandled`, aka a way to fire Optimizly after content changed
+// @TODO add & document & test router fall throughs / catch-all
 
 export class URLStructure {
-    constructor(url) {
+    static isSegmentKey(segment) {
+
+        return segment.charAt(0) === '{' && segment.charAt(segment.length - 1) === '}';
+    }
+
+
+    static getSegmentKey(segment) {
+        let segmentKey = null;
+        if (URLStructure.isSegmentKey(segment)) {
+            segmentKey = segment.slice(1, -1);
+        }
+        return segmentKey;
+    }
+
+    static getPathname(url) {
         // remove any protocol/host/port
         let hostMatch = url.match( /.*?\/\/.*?\// );
         let host = hostMatch ? hostMatch[0] : '/';
-        url = url.replace( host, '/' );
+        return url.replace( host, '/' );
+    }
+
+    constructor(url) {
+        url = URLStructure.getPathname(url);
 
         let {1: path, 3: querystring} = url.match(/(.*?)($|\?(.*))/);
 
-        // @TODO kill this
-        this.url = url;
-
-        // find path components
-        // @TODO shouldn't be named components, what does the spec call it?
-        this.components = path.split('/').filter((component => component.length > 0));
+        // find path segments
+        this.segments = path.split('/').filter((segment => segment.length > 0));
 
         // parse querystring
         this.querystring = {};
@@ -30,34 +45,20 @@ export class URLStructure {
         }
     }
 
-    static isComponentKey(component) {
-
-        return component.charAt(0) === '{' && component.charAt(component.length - 1) === '}';
-    }
-
-
-    static getComponentKey(component) {
-        let componentKey = null;
-        if (URLStructure.isComponentKey(component)) {
-            componentKey = component.slice(1, -1);
-        }
-        return componentKey;
-    }
-
     getUrlForState(state) {
         // build path
-        let componentKeys = [];
-        let path = this.components.reduce(
-            (url, component) => {
-                let componentKey = URLStructure.getComponentKey(component);
-                componentKeys.push(componentKey);
-                if (componentKey != null) {
-                    let componentValue = state[componentKey];
-                    if (componentValue != null) {
-                        url += `/${componentValue}`;
+        let segmentKeys = [];
+        let path = this.segments.reduce(
+            (url, segment) => {
+                let segmentKey = URLStructure.getSegmentKey(segment);
+                segmentKeys.push(segmentKey);
+                if (segmentKey != null) {
+                    let segmentValue = state[segmentKey];
+                    if (segmentValue != null) {
+                        url += `/${segmentValue}`;
                     }
                 } else {
-                    url += `/${component}`;
+                    url += `/${segment}`;
                 }
 
                 return url;
@@ -70,7 +71,7 @@ export class URLStructure {
         let stateKeys = Object.keys(state);
         for (let i = 0; i < stateKeys.length; i++) {
             let key = stateKeys[i];
-            if (componentKeys.indexOf(key) === -1) { // ensure this key wasn't used in the path
+            if (segmentKeys.indexOf(key) === -1) { // ensure this key wasn't used in the path
                 let value = state[key];
                 queryParams.push(`${key}=${encodeURIComponent(value)}`);
             }
@@ -87,11 +88,11 @@ export class URLStructure {
         let parameters = {};
 
         // match path parameters
-        this.components.forEach(
-            (component, idx) => {
-                let componentKey = URLStructure.getComponentKey(component);
-                if (componentKey != null) {
-                    parameters[componentKey] = urlStructure.components[idx];
+        this.segments.forEach(
+            (segment, idx) => {
+                let segmentKey = URLStructure.getSegmentKey(segment);
+                if (segmentKey != null) {
+                    parameters[segmentKey] = urlStructure.segments[idx];
                 }
             }
         );
@@ -120,10 +121,10 @@ export class TreeRoute {
         this.children = {};
     }
 
-    addRoute(handler, urlStructure, componentIndex = 0) {
-        let component = urlStructure.components[componentIndex];
+    addRoute(handler, urlStructure, segmentIndex = 0) {
+        let segment = urlStructure.segments[segmentIndex];
 
-        if (component == null) {
+        if (segment == null) {
             // we've reached the end of this route's path
             if (this.leaf == null) {
                 // there's no leaf node here, make this one it
@@ -133,34 +134,34 @@ export class TreeRoute {
                 throw new Error(`Route ${urlStructure.path} already mounted: ${this.leaf.urlStructure.path}`);
             }
         } else {
-            let componentKey = URLStructure.getComponentKey(component);
-            let childKey = componentKey == null ? component : DYNAMIC_ROUTE_KEY;
+            let segmentKey = URLStructure.getSegmentKey(segment);
+            let childKey = segmentKey == null ? segment : DYNAMIC_ROUTE_KEY;
             if (!this.children.hasOwnProperty(childKey)) {
                 // child node doesn't exist, create it
                 this.children[childKey] = new TreeRoute();
             }
-            this.children[childKey].addRoute(handler, urlStructure, componentIndex+1);
+            this.children[childKey].addRoute(handler, urlStructure, segmentIndex+1);
         }
     }
 
-    matchPath(urlStructure, componentIndex = 0) {
+    matchPath(urlStructure, segmentIndex = 0) {
         let match = null;
 
-        if (componentIndex === urlStructure.components.length) {
+        if (segmentIndex === urlStructure.segments.length) {
             // We've reached the end, cool, is there a route here?
             match = this.leaf;
         } else {
             // Not at the end of the path yet!
-            let component = urlStructure.components[componentIndex];
+            let segment = urlStructure.segments[segmentIndex];
 
-            if (this.children.hasOwnProperty(component)) {
+            if (this.children.hasOwnProperty(segment)) {
                 // Yay, there's an exact match at this level
-                match = this.children[component].matchPath(urlStructure, componentIndex+1);
+                match = this.children[segment].matchPath(urlStructure, segmentIndex+1);
             }
 
             if (match == null && this.children.hasOwnProperty(DYNAMIC_ROUTE_KEY)) {
                 // There wasn't a more-exact route that matched so maybe it's dynamic?
-                match = this.children[DYNAMIC_ROUTE_KEY].matchPath(urlStructure, componentIndex+1);
+                match = this.children[DYNAMIC_ROUTE_KEY].matchPath(urlStructure, segmentIndex+1);
             }
         }
 
@@ -189,7 +190,11 @@ export class Router {
     matchRoute(method, url) {
         method = method.toLowerCase();
         let urlStructure = new URLStructure(url);
-        return this.trees[method].matchPath(urlStructure);
+        let match = null;
+        if (this.trees.hasOwnProperty(method)) {
+            match = this.trees[method].matchPath(urlStructure);
+        }
+        return match;
     }
 
     route(method, url) {
@@ -198,7 +203,7 @@ export class Router {
 
         if (match != null) {
             let parameters = match.urlStructure.extractParameters(url);
-            match.handler(url, parameters);
+            match.handler(parameters);
         }
     }
 }
