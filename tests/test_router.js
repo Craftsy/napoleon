@@ -15,7 +15,7 @@ describe('Router', function() {
     describe('#mount()', function() {
         it('should return the router instance for chaining', function() {
             let router = new Router();
-            let returnVal = router.mount('GET', '/', noop);
+            let returnVal = router.mount({method: 'GET', url: '/', handler: noop});
             expect(router).to.equal(returnVal);
         });
         
@@ -23,12 +23,12 @@ describe('Router', function() {
             let router;
 
             router = new Router();
-            router.mount('GET', '/', noop);
+            router.mount({method: 'GET', url: '/', handler: noop});
             expect(router.trees).to.have.property('get');
             expect(router.trees).to.not.have.property('post');
 
             router = new Router();
-            router.mount('POST', '/', noop);
+            router.mount({method: 'POST', url: '/', handler: noop});
             expect(router.trees).to.not.have.property('get');
             expect(router.trees).to.have.property('post');
         });
@@ -42,7 +42,7 @@ describe('Router', function() {
 
         it('should match at top-level', function() {
             let router = new Router();
-            router.mount('GET', '/', noop);
+            router.mount({method: 'GET', url: '/', handler: noop});
 
             let returnValue = router.matchRoute('GET', '/');
             expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
@@ -51,14 +51,14 @@ describe('Router', function() {
 
         it('should match the HTTP method', function() {
             let router = new Router();
-            router.mount('GET', '/', noop);
+            router.mount({method: 'GET', url: '/', handler: noop});
 
             expect(router.matchRoute('POST', '/')).to.equal(null);
         });
 
         it('should match nested routes', function() {
             let router = new Router();
-            router.mount('GET', '/about', noop);
+            router.mount({method: 'GET', url: '/about', handler: noop});
 
             let returnValue = router.matchRoute('GET', '/about');
             expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
@@ -67,7 +67,7 @@ describe('Router', function() {
 
         it('should be trailing-slash insensitive', function() {
             let router = new Router();
-            router.mount('GET', '/about', noop);
+            router.mount({method: 'GET', url: '/about', handler: noop});
 
             let structure1 = router.matchRoute('GET', '/about');
             let structure2 = router.matchRoute('GET', '/about/');
@@ -76,7 +76,7 @@ describe('Router', function() {
 
         it('should match parameterized routes', function() {
             let router = new Router();
-            router.mount('GET', '/about/{value}', noop);
+            router.mount({method: 'GET', url: '/about/{value}', handler: noop});
 
             let returnValue = router.matchRoute('GET', '/about/anything');
             expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
@@ -85,7 +85,7 @@ describe('Router', function() {
 
         it('should match parameterized routes\' children', function() {
             let router = new Router();
-            router.mount('POST', '/about/{value}/test', noop);
+            router.mount({method: 'POST', url: '/about/{value}/test', handler: noop});
 
             let returnValue = router.matchRoute('POST', '/about/anything/test');
             expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
@@ -94,7 +94,7 @@ describe('Router', function() {
 
         it('should require all path parameters to exist', function() {
             let router = new Router();
-            router.mount('POST', '/about/{value}/anotherTest/{anotherValue}', noop);
+            router.mount({method: 'POST', url: '/about/{value}/anotherTest/{anotherValue}', handler: noop});
 
             expect(router.matchRoute('POST', '/about/anything/anotherTest')).to.equal(null);
             expect(router.matchRoute('POST', '/about/anything/anotherTest/')).to.equal(null);
@@ -108,8 +108,8 @@ describe('Router', function() {
             let router = new Router();
             let noop2 = ()=>{};
 
-            router.mount('GET', '/about/{value}', noop);
-            router.mount('GET', '/about/test', noop2);
+            router.mount({method: 'GET', url: '/about/{value}', handler: noop});
+            router.mount({method: 'GET', url: '/about/test', handler: noop2});
 
             let returnValue = router.matchRoute('GET', '/about/test');
             expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
@@ -118,7 +118,7 @@ describe('Router', function() {
 
         it('should match blats', function() {
             let router = new Router();
-            router.mount('GET', '*', noop);
+            router.mount({method: 'GET', url: '*', handler: noop});
 
             let returnValue = router.matchRoute('GET', '/about');
             expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
@@ -127,7 +127,7 @@ describe('Router', function() {
 
         it('should ignore querystrings', function() {
             let router = new Router();
-            router.mount('GET', '/about', noop);
+            router.mount({method: 'GET', url: '/about', handler: noop});
 
             let returnValue = router.matchRoute('GET', '/about?this=is&a=test');
             expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
@@ -138,48 +138,48 @@ describe('Router', function() {
     describe('#route()', function() {
         it('should fire the handler', function(done){
             let router = new Router();
-            router.mount('GET', '/', ()=>done());
+            router.mount({method: 'GET', url: '/', handler: ()=>done()});
             router.route('GET', '/');
         });
 
         it('should pass route parameters to the handler', function(done){
             let router = new Router();
-            router.mount('GET', '/about/{value}/{anotherValue}', function(parameters) {
+            router.mount({method: 'GET', url: '/about/{value}/{anotherValue}', handler: function(parameters) {
                 expect(parameters).to.deep.equal({
                     value: 'ABC',
                     anotherValue: '012'
                 });
                 done();
-            });
+            }});
             router.route('GET', '/about/ABC/012');
         });
 
         it('should pass querystring parameters to the handler', function(done){
             let router = new Router();
-            router.mount('GET', '/about/{value}', function(parameters) {
+            router.mount({method: 'GET', url: '/about/{value}', handler: function(parameters) {
                 expect(parameters).to.deep.equal({
                     value: 'ABC',
                     anotherValue: 'XYZ'
                 });
                 done();
-            });
+            }});
             router.route('GET', '/about/ABC?anotherValue=XYZ');
         });
 
         it('should not override path parameters with querystring parameters', function(done){
             let router = new Router();
-            router.mount('GET', '/about/{value}', function(parameters) {
+            router.mount({method: 'GET', url: '/about/{value}', handler: function(parameters) {
                 expect(parameters).to.deep.equal({
                     value: 'ABC'
                 });
                 done();
-            });
+            }});
             router.route('GET', '/about/ABC?value=XYZ');
         });
 
         it('should set all parameters as strings', function(done) {
             let router = new Router();
-            router.mount('GET', '/{a}/{b}', function(parameters) {
+            router.mount({method: 'GET', url: '/{a}/{b}', handler: function(parameters) {
                 expect(parameters).to.deep.equal({
                     a: '123',
                     b: 'true',
@@ -187,7 +187,7 @@ describe('Router', function() {
                     d: 'false'
                 });
                 done();
-            });
+            }});
             router.route('GET', '/123/true?c=890&d=false');
         });
     });

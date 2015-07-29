@@ -1,13 +1,11 @@
 // @TODO Let routes be named so URLs can be created from routes
 // @TODO Client-side routing, have router initialize from url and pick up changes
 // @TODO add global events like `urlChanged` or `routeHandled`, aka a way to fire Optimizly after content changed
-// @TODO add & document & test router fall throughs / catch-all
 
 export class URLStructure {
     static isSegmentKey(segment) {
         return segment.charAt(0) === '{' && segment.charAt(segment.length - 1) === '}';
     }
-
 
     static getSegmentKey(segment) {
         let segmentKey = null;
@@ -203,18 +201,29 @@ export class TreeRoute {
 
 export class Router {
     constructor() {
+        this.namedRoutes = {};
         this.trees = {};
     }
 
-    mount(method, path, handler) {
+    mount(config) {
+        let {method = 'get', url, handler, name} = config;
         method = method.toLowerCase();
-        let urlStructure = new URLStructure(path);
 
+        let urlStructure = new URLStructure(url);
+
+        // Add to the route tree
         if (this.trees[method] == null) {
             this.trees[method] = new TreeRoute();
         }
-
         this.trees[method].addRoute(handler, urlStructure);
+
+        // If its named, add to the named routes
+        if (name != null) {
+            if (this.namedRoutes.hasOwnProperty(name)) {
+                throw new Error(`Conflict for route name ${name}: ${url} / ${this.namedRoutes[name].url}`);
+            }
+            this.namedRoutes[name] = config;
+        }
 
         return this;
     }
@@ -237,6 +246,10 @@ export class Router {
             let parameters = match.urlStructure.extractParameters(url);
             match.handler(parameters);
         }
+    }
+
+    getNamedRoute(name) {
+        return this.namedRoutes[name] || null;
     }
 }
 
