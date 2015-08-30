@@ -88,3 +88,8 @@ Napoleon.modifyState({
 There is a third configuration that can be set: `replace`. Setting `replace` to true will replace the existing browser
 history item instead of creating a new one.
 - give example -
+
+###Develop
+- `npm install` install packages
+- `npm test` will build napoleon, build tests, and run tests
+- `npm run build` will build napoleon

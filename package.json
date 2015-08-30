@@ -9,6 +9,10 @@
     "url": "https://github.com/Craftsy/napoleon.git"
   },
   "main": "build/napoleon.js",
+  "scripts": {
+    "test": "gulp test",
+    "build": "gulp"
+  },
   "contributors": [
     {
       "name": "Chandler Prall",
