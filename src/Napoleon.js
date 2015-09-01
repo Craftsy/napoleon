@@ -89,7 +89,11 @@ export class URLStructure {
             (segment, idx) => {
                 let segmentKey = URLStructure.getSegmentKey(segment);
                 if (segmentKey != null) {
+                    // this is a named segment, get the value
                     parameters[segmentKey] = urlStructure.segments[idx];
+                } else if (segment === '*') {
+                    // this is a blat, return the rest of the url
+                    parameters['blat'] = urlStructure.segments.slice(idx).join('/');
                 }
             }
         );

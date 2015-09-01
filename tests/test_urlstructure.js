@@ -92,6 +92,33 @@ describe('URLStructure',function() {
         });
     });
 
+    describe('#extractParameters()', function() {
+        it('extracts named parameters', function() {
+            let urlStructure = new URLStructure('/about/{key1}/{key2}');
+            expect(urlStructure.extractParameters('/about/value1/value2')).to.deep.equal({
+                key1: 'value1',
+                key2: 'value2'
+            });
+        });
+
+        it('extracts query parameters', function() {
+            let urlStructure = new URLStructure('/about/{key1}');
+            expect(urlStructure.extractParameters('/about/value1?key2=value2')).to.deep.equal({
+                key1: 'value1',
+                key2: 'value2'
+            });
+        });
+
+        it('extracts blat parameter', function() {
+            let urlStructure = new URLStructure('/about/{key1}/*');
+            expect(urlStructure.extractParameters('/about/value1/value2/value3?key2=value4')).to.deep.equal({
+                key1: 'value1',
+                key2: 'value4',
+                blat: 'value2/value3'
+            });
+        });
+    });
+
     describe('#toString()', function() {
         it('treats the url as absolute', function() {
             expect(new URLStructure('').toString()).to.equal('/');
