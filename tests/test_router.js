@@ -18,7 +18,7 @@ describe('Router', function() {
             let returnVal = router.mount({method: 'GET', url: '/', handler: noop});
             expect(router).to.equal(returnVal);
         });
-        
+
         it('should mount a route on the correct tree', function() {
             let router;
 
@@ -119,8 +119,13 @@ describe('Router', function() {
         it('should match blats', function() {
             let router = new Router();
             router.mount({method: 'GET', url: '*', handler: noop});
-
             let returnValue = router.matchRoute('GET', '/about');
+            expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
+            expect(returnValue).to.have.property('handler').to.equal(noop);
+
+            router = new Router();
+            router.mount({method: 'GET', url: '*', handler: noop});
+            returnValue = router.matchRoute('GET', '/about/test');
             expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
             expect(returnValue).to.have.property('handler').to.equal(noop);
         });
@@ -175,6 +180,18 @@ describe('Router', function() {
                 done();
             }});
             router.route('GET', '/about/ABC?value=XYZ');
+        });
+
+        it('should collect blat value', function(done){
+            let router = new Router();
+            router.mount({method: 'GET', url: '/about/{key}/*', handler: function(parameters) {
+                expect(parameters).to.deep.equal({
+                    key: 'value1',
+                    blat: 'value2/value3'
+                });
+                done();
+            }});
+            router.route('GET', '/about/value1/value2/value3');
         });
 
         it('should set all parameters as strings', function(done) {

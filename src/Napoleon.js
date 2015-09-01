@@ -195,7 +195,7 @@ export class TreeRoute {
 
             if (match == null && this.children.hasOwnProperty(BLAT_ROUTE_KEY)) {
                 // No exact match, no dynamic route, but there's a blat!
-                match = this.children[BLAT_ROUTE_KEY].matchPath(urlStructure, segmentIndex+1);
+                match = this.children[BLAT_ROUTE_KEY].leaf;
             }
         }
 
