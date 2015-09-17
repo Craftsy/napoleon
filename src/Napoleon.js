@@ -245,11 +245,14 @@ export class Router {
     route(method, url) {
         method = method.toLowerCase();
         let match = this.matchRoute(method, url);
+        let parameters = null;
 
         if (match != null) {
-            let parameters = match.urlStructure.extractParameters(url);
+            parameters = match.urlStructure.extractParameters(url);
             match.handler(parameters);
         }
+
+        return parameters;
     }
 
     getNamedRoute(name) {

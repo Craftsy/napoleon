@@ -207,5 +207,24 @@ describe('Router', function() {
             }});
             router.route('GET', '/123/true?c=890&d=false');
         });
+
+        it('should return the route\'s parameters', function() {
+            let router = new Router();
+            router.mount({url: '/test/{key}', handler: function() {}});
+
+            let parameters = router.route('GET', '/test/value?query=string');
+            expect(parameters).to.deep.equal({
+                key: 'value',
+                query: 'string'
+            });
+        });
+
+        it('should return `null` parameters when no matching route', function() {
+            let router = new Router();
+            router.mount({url: '/test/{key}', handler: function() {}});
+
+            let parameters = router.route('GET', '/test2/value?query=string');
+            expect(parameters).to.be.null;
+        });
     });
 });

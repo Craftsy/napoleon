@@ -1,6 +1,6 @@
 {
   "name": "napoleon",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "Isomorphic JavaScript Routing & HTML5 History",
   "keywords": ["isomorphic", "routing", "html5", "history"],
   "license": "MIT",
