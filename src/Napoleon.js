@@ -242,14 +242,14 @@ export class Router {
         return match;
     }
 
-    route(method, url) {
+    route(method, url, data) {
         method = method.toLowerCase();
         let match = this.matchRoute(method, url);
         let parameters = null;
 
         if (match != null) {
             parameters = match.urlStructure.extractParameters(url);
-            match.handler(parameters);
+            match.handler(parameters, data);
         }
 
         return parameters;

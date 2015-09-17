@@ -208,6 +208,23 @@ describe('Router', function() {
             router.route('GET', '/123/true?c=890&d=false');
         });
 
+        it('should pass data object in addition to parameters', function(done) {
+            let router = new Router();
+            router.mount({method: 'GET', url: '/{a}/{b}', handler: function(parameters, data) {
+                expect(parameters).to.deep.equal({
+                    a: '123',
+                    b: 'true',
+                    c: '890',
+                    d: 'false'
+                });
+                expect(data).to.deep.equal({
+                    dataKey: 'dataValue'
+                });
+                done();
+            }});
+            router.route('GET', '/123/true?c=890&d=false', {dataKey: 'dataValue'});
+        });
+
         it('should return the route\'s parameters', function() {
             let router = new Router();
             router.mount({url: '/test/{key}', handler: function() {}});
