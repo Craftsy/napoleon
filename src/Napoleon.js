@@ -174,11 +174,21 @@ export class TreeRoute {
     }
 
     matchPath(urlStructure, segmentIndex = 0) {
+        console.log(`matchPath(${urlStructure}, ${segmentIndex})`);
         let match = null;
 
         if (segmentIndex === urlStructure.segments.length) {
             // We've reached the end, cool, is there a route here?
+            console.log('at the end! leaf is', this.leaf);
+
             match = this.leaf;
+
+            if (match == null && segmentIndex === 0) {
+                // this is an attempt to match `/` against a route, so make an exception if there's a blat child
+                if (match == null && this.children.hasOwnProperty(BLAT_ROUTE_KEY)) {
+                    match = this.children[BLAT_ROUTE_KEY].leaf;
+                }
+            }
         } else {
             // Not at the end of the path yet!
             let segment = urlStructure.segments[segmentIndex];

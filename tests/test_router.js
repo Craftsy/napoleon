@@ -43,7 +43,6 @@ describe('Router', function() {
         it('should match at top-level', function() {
             let router = new Router();
             router.mount({method: 'GET', url: '/', handler: noop});
-
             let returnValue = router.matchRoute('GET', '/');
             expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
             expect(returnValue).to.have.property('handler').to.equal(noop);
@@ -119,7 +118,19 @@ describe('Router', function() {
         it('should match blats', function() {
             let router = new Router();
             router.mount({method: 'GET', url: '*', handler: noop});
-            let returnValue = router.matchRoute('GET', '/about');
+            let returnValue = router.matchRoute('GET', '/');
+            expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
+            expect(returnValue).to.have.property('handler').to.equal(noop);
+
+            router = new Router();
+            router.mount({method: 'GET', url: '/about/*', handler: noop});
+            returnValue = router.matchRoute('GET', '/about/me');
+            expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
+            expect(returnValue).to.have.property('handler').to.equal(noop);
+
+            router = new Router();
+            router.mount({method: 'GET', url: '*', handler: noop});
+            returnValue = router.matchRoute('GET', '/about');
             expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
             expect(returnValue).to.have.property('handler').to.equal(noop);
 
