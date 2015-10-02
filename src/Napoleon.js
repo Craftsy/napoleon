@@ -174,13 +174,10 @@ export class TreeRoute {
     }
 
     matchPath(urlStructure, segmentIndex = 0) {
-        console.log(`matchPath(${urlStructure}, ${segmentIndex})`);
         let match = null;
 
         if (segmentIndex === urlStructure.segments.length) {
             // We've reached the end, cool, is there a route here?
-            console.log('at the end! leaf is', this.leaf);
-
             match = this.leaf;
 
             if (match == null && segmentIndex === 0) {
