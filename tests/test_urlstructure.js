@@ -30,19 +30,31 @@ describe('URLStructure',function() {
     });
 
     describe('::getPathname()', function() {
-        let urlStructure;
+        it('should return the full relative URL path & querystring', function() {
+            let urlStructure;
 
-        expect(URLStructure.getPathname('http://www.example.com/this/is/something')).to.equal('/this/is/something');
+            expect(URLStructure.getPathname('http://www.example.com/this/is/something')).to.equal('/this/is/something');
 
-        expect(URLStructure.getPathname('https://www.example.com/this/is/something')).to.equal('/this/is/something');
+            expect(URLStructure.getPathname('https://www.example.com/this/is/something')).to.equal('/this/is/something');
 
-        expect(URLStructure.getPathname('//www.example.com/this/is/something')).to.equal('/this/is/something');
+            expect(URLStructure.getPathname('//www.example.com/this/is/something')).to.equal('/this/is/something');
 
-        expect(URLStructure.getPathname('http://example.com/this/is/something')).to.equal('/this/is/something');
+            expect(URLStructure.getPathname('http://example.com/this/is/something')).to.equal('/this/is/something');
 
-        expect(URLStructure.getPathname('http://www.example.com:80/this/is/something')).to.equal('/this/is/something');
+            expect(URLStructure.getPathname('http://www.example.com:80/this/is/something')).to.equal('/this/is/something');
 
-        expect(URLStructure.getPathname('//www.example.com:80/this/is/something')).to.equal('/this/is/something');
+            expect(URLStructure.getPathname('//www.example.com:80/this/is/something')).to.equal('/this/is/something');
+
+            expect(URLStructure.getPathname('//www.example.com:80/this/is/something?query=string')).to.equal('/this/is/something?query=string');
+
+            expect(URLStructure.getPathname('//www.example.com:80/this/is/something?url=https://example.com/path')).to.equal('/this/is/something?url=https://example.com/path');
+
+            expect(URLStructure.getPathname('/a/path')).to.equal('/a/path');
+
+            expect(URLStructure.getPathname('/a/path?with=querystring')).to.equal('/a/path?with=querystring');
+            
+            expect(URLStructure.getPathname('/a/path?url=https://example.com/path')).to.equal('/a/path?url=https://example.com/path');
+        });
     });
 
     describe('#constructor()', function() {

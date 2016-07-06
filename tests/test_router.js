@@ -149,6 +149,15 @@ describe('Router', function() {
             expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
             expect(returnValue).to.have.property('handler').to.equal(noop);
         });
+
+        it('should when the querystring contains something like a url', function() {
+            let router = new Router();
+            router.mount({method: 'GET', url: '/about-test', handler: noop});
+
+            let returnValue = router.matchRoute('GET', '/about-test?url=//example.com/');
+            expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
+            expect(returnValue).to.have.property('handler').to.equal(noop);
+        });
     });
 
     describe('#route()', function() {

@@ -17,9 +17,9 @@ export class URLStructure {
 
     static getPathname(url) {
         // remove any protocol/host/port
-        let hostMatch = url.match( /.*?\/\/.*?\// );
+        let hostMatch = url.match(/^[^?]*?\/\/.*?\//);
         let host = hostMatch ? hostMatch[0] : '/';
-        return url.replace( host, '/' );
+        return url.replace(host, '/');
     }
 
     constructor(url) {
