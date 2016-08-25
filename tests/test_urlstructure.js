@@ -86,12 +86,24 @@ describe('URLStructure',function() {
     });
 
     describe('#getUrlForState()', function() {
+        let topLEvelUrlStructure = new URLStructure('/');
         let urlStructure = new URLStructure('/about/{key}/test/{anotherKey}');
+
+        it('builds a top-level url correctly', function() {
+            expect(topLEvelUrlStructure.getUrlForState({})).to.equal('/');
+        });
+
         it('injects path parameters', function() {
             expect(urlStructure.getUrlForState({
                 key: 'value',
                 anotherKey: 'anotherValue'
             })).to.equal('/about/value/test/anotherValue');
+        });
+
+        it('ignores unset path parameters', function() {
+            expect(urlStructure.getUrlForState({
+                anotherKey: 'anotherValue'
+            })).to.equal('/about/test/anotherValue');
         });
 
         it('injects querystring parameters', function() {

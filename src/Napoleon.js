@@ -45,23 +45,25 @@ export class URLStructure {
     getUrlForState(state) {
         // build path
         let segmentKeys = [];
-        let path = this.segments.reduce(
-            (url, segment) => {
-                let segmentKey = URLStructure.getSegmentKey(segment);
-                segmentKeys.push(segmentKey);
-                if (segmentKey != null) {
-                    let segmentValue = state[segmentKey];
-                    if (segmentValue != null) {
-                        url += `/${segmentValue}`;
+        let segments = this.segments
+            .map(
+                segment => {
+                    let segmentKey = URLStructure.getSegmentKey(segment);
+                    segmentKeys.push(segmentKey);
+                    if (segmentKey != null) {
+                        let segmentValue = state[segmentKey];
+                        if (segmentValue != null) {
+                            return segmentValue;
+                        } else {
+                            return null;
+                        }
+                    } else {
+                        return segment;
                     }
-                } else {
-                    url += `/${segment}`;
                 }
-
-                return url;
-            },
-            ''
-        );
+            )
+            .filter(segment => segment != null);
+        let path = `/${segments.join('/')}`;
 
         // build querystring
         let queryParams = [];
