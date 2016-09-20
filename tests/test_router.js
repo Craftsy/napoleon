@@ -158,6 +158,16 @@ describe('Router', function() {
             expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
             expect(returnValue).to.have.property('handler').to.equal(noop);
         });
+
+        it('should return the matched route\'s name if it has one', function() {
+            let router = new Router();
+            router.mount({name:'aboutMe', method: 'GET', url: '/about', handler: noop});
+
+            let returnValue = router.matchRoute('GET', '/about');
+            expect(returnValue).to.have.property('urlStructure').to.be.an.instanceof(URLStructure);
+            expect(returnValue).to.have.property('handler').to.equal(noop);
+            expect(returnValue).to.have.property('name').to.equal('aboutMe');
+        })
     });
 
     describe('#route()', function() {

@@ -141,7 +141,7 @@ export class TreeRoute {
         this.children = {};
     }
 
-    addRoute(handler, urlStructure, segmentIndex = 0) {
+    addRoute(name, handler, urlStructure, segmentIndex = 0) {
         let segment = urlStructure.segments[segmentIndex];
 
         if (segment == null) {
@@ -149,6 +149,9 @@ export class TreeRoute {
             if (this.leaf == null) {
                 // there's no leaf node here, make this one it
                 this.leaf = {urlStructure, handler};
+                if (name != null) {
+                    this.leaf.name = name;
+                }
             } else {
                 // there is already a matching route here, throw an error
                 throw new Error(`Route ${urlStructure} already mounted: ${this.leaf.urlStructure}`);
@@ -171,7 +174,7 @@ export class TreeRoute {
                 // child node doesn't exist, create it
                 this.children[childKey] = new TreeRoute();
             }
-            this.children[childKey].addRoute(handler, urlStructure, segmentIndex+1);
+            this.children[childKey].addRoute(name, handler, urlStructure, segmentIndex+1);
         }
     }
 
@@ -228,7 +231,7 @@ export class Router {
         if (this.trees[method] == null) {
             this.trees[method] = new TreeRoute();
         }
-        this.trees[method].addRoute(handler, urlStructure);
+        this.trees[method].addRoute(name, handler, urlStructure);
 
         // If its named, add to the named routes
         if (name != null) {
