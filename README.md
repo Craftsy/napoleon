@@ -1,95 +1,65 @@
 # Napoleon
 
-## This is still in active development and not quite ready for real use
-
 An isomorphic JavaScript routing and HTML5 history library.
 
-- quick use case & code example -
-- examples directory -
+## Quick Start
+
+```javascript
+const Napoleon = require('napoleon');
+const router = new Napoleon.Router();
+router.mount({
+    name: 'userprofile',
+    method: 'GET',
+    url: '/user/{userId}',
+    handler: () => {
+        console.log('Routed to user profile');
+    }
+});
+
+router.route('GET', '/user/15'); // calls the handler above, logging "Routed to user profile" to console
+```
 
 ## Routing
 Routes are stored in a tree structure for fast insertion and lookup.
 
-- document that all parameters come through as strings -
-
 ###Adding routes
-`mount(METHOD, PATH, HANDLER)`
-* **method**: GET|POST|PUT|DELETE|etc - case insensitive
-* **path**: URL path to match - needs example
+`mount({method = 'GET', url, handler, name})`
+* **method**: GET|POST|PUT|DELETE|etc - case insensitive, defaults to GET
+* **url**: URL path to match, named variable parameters are identified by brackets: `/user/{userId}`
 * **handler**: function which is called when the path is matched
-    * **url**: url that matched the route
     * **parameters**: key/value object with parameters pulled from the route and querystring
+    * **data**: an argument that is passed through to the handler by the `route` method
+
+URLs can be parameterized by wrapping one of the path segments in `{}` brackets. For example, when matching a route `/user/{userId}` anything in the segment following `/user/` will be extracted into a `userId` value. Star characters can be used as a match-all: `/users/{userId}/*`
 
 ```javascript
 let router = new Napoleon.Router();
-router.mount(
-    'GET',
-    '/user/{userId}',
-    function(url, parameters) {
-        console.log(url, 'was called with parameters', parameters);
-    }
-);
-```
-
-###Calling routes
-- needs better documentation -
-router.route('GET', url); - this will automatically fire the route hander
-- document router.matchRoute
-
-## HTML5 History
-Napoleon also provides a way to manage browsers' HTML5 history through state management.
-- browser support, and this is browser only -
-- basic example use case -
-- create data flow diagram -
-- why is this separate from the routing library -
-
-###State
-- don't introduce `extras` here, move that down after the basic use of `url` params is familiar
-Napoleon's concept of state has two parts: `url` and `extras`. The `url` state matches the browser's URL, any values
-defined in the url path are extracted and combined with querystring parameters. e.g. a url definition of `/{category}`
-and actual url `/turtles?mutants=true` will yield the url state
-
-```javascript
-{
-    category: "turtles",
-    mutants: "true"
-}
-```
-
-The `extras` state can be given key/values which will not be represented in the URL. These are hidden from the user and
-can be used to hold additional state information for the page.
-
-###Attaching
-```javascript
-Napoleon.attach({
-    url: '/{category}/{section}',
-    onStateChange: function(state) {
-        console.log('new state', state);
+router.mount({
+    name: 'userprofile',
+    method: 'GET',
+    url: '/user/{userId}',
+    handler: parameters => {
+        const {userId} = parameters;
+        console.log(`user profile was called for user ${userId}`);
     }
 });
 ```
 
-The `onStateChange` function is called every time there is a new state, which happens at three points:
-* When Napoleon attaches - the state either already exists (page reload) or it's generated from the URL
-* The user navigates Forward or Backward through the browser's history
-* The page state is modified through Napoleon's API
-
-###Modifying State
-- document that this fires onStateChange callback -
-Napoleon has a `modifyState` method which sets the `url` and `extras` states. Both of the configuration objects are optional.
-
+###Calling route handlers
+Call `route` to trigger a route handler for a given path.
+ 
 ```javascript
-Napoleon.modifyState({
-    url: {category: 'turtles', mutants: true},
-    extras: {}
-});
+router.route('GET', url);
 ```
 
-There is a third configuration that can be set: `replace`. Setting `replace` to true will replace the existing browser
-history item instead of creating a new one.
-- give example -
+###Retrieving route declaration object
+You can retrieve the route object used when a route was mounted by calling `matchRoute`
 
-###Develop
+```javascript
+const route = router.matchRoute('GET', url);
+```
+
+###Development
 - `npm install` install packages
 - `npm test` will build napoleon, build tests, and run tests
 - `npm run build` will build napoleon
