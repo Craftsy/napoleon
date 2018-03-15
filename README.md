@@ -22,7 +22,7 @@ router.route('GET', '/user/15'); // calls the handler above, logging "Routed to 
 ## Routing
 Routes are stored in a tree structure for fast insertion and lookup.
 
-###Adding routes
+### Adding routes
 `mount({method = 'GET', url, handler, name})`
 * **method**: GET|POST|PUT|DELETE|etc - case insensitive, defaults to GET
 * **url**: URL path to match, named variable parameters are identified by brackets: `/user/{userId}`
@@ -45,21 +45,21 @@ router.mount({
 });
 ```
 
-###Calling route handlers
+### Calling route handlers
 Call `route` to trigger a route handler for a given path.
  
 ```javascript
 router.route('GET', url);
 ```
 
-###Retrieving route declaration object
+### Retrieving route declaration object
 You can retrieve the route object used when a route was mounted by calling `matchRoute`
 
 ```javascript
 const route = router.matchRoute('GET', url);
 ```
 
-###Development
+### Development
 - `npm install` install packages
 - `npm test` will build napoleon, build tests, and run tests
 - `npm run build` will build napoleon
